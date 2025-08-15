@@ -56,5 +56,4 @@ The solution is scalable for applications in **education**, **content moderation
 
 ---
 
-## 📂 Project Architecture
 
