@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Summarizer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Add html2pdf.js library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-robot animate-float"></i>
+            <span>AI Video Summarizer</span>
+        </div>
+        <div class="nav-links">
+            <a href="#home" class="active hover-underline">Home</a>
+            <a href="#project" class="hover-underline">Summarize</a>
+            <a href="#team" class="hover-underline">Team</a>
+            <a href="#history" class="hover-underline">History</a>
+            <a href="#contact" class="hover-underline">Contact</a>
+        </div>
+        <div class="theme-toggle">
+            <i class="fas fa-sun"></i>
+            <label class="toggle-switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="toggle-slider"></span>
+            </label>
+            <i class="fas fa-moon"></i>
+        </div>
+    </nav>
+
+    <div class="section home-section active" id="home">
+        <div class="container">
+            <div class="home-content">
+                <div class="home-text">
+                    <h1 class="home-title">AI Video Summarizer</h1>
+                    <p class="home-description">Transform lengthy videos into concise, informative summaries with our AI-powered tool. Save time and get the key points without watching the entire content.</p>
+                    <div class="home-buttons">
+                        <button class="btn primary-btn animate-pulse">
+                            <span class="btn-content">
+                                <i class="fas fa-magic"></i>
+                                <span class="btn-text">Get Started</span>
+                            </span>
+                            <span class="btn-glow"></span>
+                        </button>
+                        <button class="btn secondary-btn animate-float">
+                            <span class="btn-content">
+                                <i class="fas fa-users"></i>
+                                <span class="btn-text">Meet Our Team</span>
+                            </span>
+                            <span class="btn-border"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="home-image">
+                    <img src="{{ url_for('static', filename='img/Leonardo_Phoenix_10_A_minimalist_modern_illustration_depicting_2.jpg') }}" alt="AI Video Summarizer" class="hero-image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="project" class="section project-section">
+        <div class="project-container">
+            <h2 class="section-title">AI Video Summarizer</h2>
+            <p class="section-description">Enter a YouTube video URL to get an AI-generated summary of the content.</p>
+            
+            <div class="input-container">
+                <div class="input-group">
+                    <input type="text" id="youtube-url" placeholder="Enter YouTube video URL">
+                    <button id="fetch-btn" onclick="getVideoDetails()"><i class="fas fa-search"></i> Fetch Video</button>
+                </div>
+            </div>
+            
+            <!-- Video Info (Hidden by default) -->
+            <div id="video-info" class="hidden">
+                <div class="thumbnail-container">
+                    <img id="thumbnail" src="" alt="Video Thumbnail">
+                </div>
+                <div class="video-details">
+                    <h3 id="video-title" class="video-title">Video Title</h3>
+                    <p id="video-author" class="video-author">By Channel Name</p>
+                    <div id="video-stats" class="video-stats">
+                        <span><i class="fas fa-eye"></i> 0 views</span>
+                        <span><i class="fas fa-calendar"></i> Published date</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Transcript Container (Hidden by default) -->
+            <div id="transcript-container" class="hidden">
+                <h3>Video Transcript</h3>
+                <textarea id="transcript-text" placeholder="Transcript will appear here..."></textarea>
+            </div>
+            
+            <!-- Summary Controls (Hidden by default) -->
+            <div id="summary-controls" class="hidden">
+                <div class="control-group">
+                    <label for="format-selector">Summary Format:</label>
+                    <select id="format-selector">
+                        <option value="bullet_points">Bullet Points</option>
+                        <option value="paragraph">Paragraph</option>
+                        <option value="detailed">Detailed</option>
+                    </select>
+                </div>
+                
+                <div class="control-group toggle-container">
+                    <label for="audio-toggle">Generate Audio:</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="audio-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <button id="summarize-btn" class="generate-btn" onclick="getSummary()">
+                    <span class="btn-content">
+                        <i class="fas fa-magic"></i>
+                        <span>Generate Summary</span>
+                    </span>
+                    <div class="btn-particles"></div>
+                </button>
+            </div>
+            
+            <!-- Summary Output (Hidden by default) -->
+            <div id="summary-output" class="hidden">
+                <div class="summary-header">
+                    <h3 class="summary-title">Summary</h3>
+                    <div class="summary-actions">
+                        <button class="action-btn" onclick="copyToClipboard()"><i class="fas fa-copy"></i></button>
+                        <button class="action-btn" onclick="downloadPDF()"><i class="fas fa-file-pdf"></i></button>
+                        <button class="action-btn" onclick="shareResult()"><i class="fas fa-share-alt"></i></button>
+                    </div>
+                </div>
+                <div class="summary-content"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="history" class="section history-section">
+        <div class="container">
+            <h2 class="section-title">Summary History</h2>
+            <p class="section-description">Your previously generated video summaries</p>
+            
+            <div class="history-grid" id="history-container">
+                <!-- History items will be dynamically added here -->
+            </div>
+            
+            <div class="no-history-message hidden">
+                <i class="fas fa-history"></i>
+                <p>No summaries in your history yet. Try summarizing a video!</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="team" class="section team-section">
+        <div class="container">
+            <h2 class="section-title">Meet Our Team</h2>
+            <p class="section-description">The talented individuals behind AI Video Summarizer</p>
+            
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-card-inner">
+                        <div class="team-card-front">
+                            <div class="member-image">
+                                <img src="{{ url_for('static', filename='img/WhatsApp Image 2025-01-26 at 15.21.05_f40ba065.jpg') }}" alt="Team Member">
+                            </div>
+                            <h3>Ramadugu Sai Kiran</h3>
+                            <p>Computer Science Student</p>
+                        </div>
+                        <div class="team-card-back">
+                            <h3>About Me</h3>
+                            <p>I am Current Pursuing B.tech 3rd year At Kalasalingam Academy Of Research and Education.</p>
+                            <div class="social-links">
+                                <a href="#" target="_blank"><i class="fab fa-linkedin"></i></a>
+                                <a href="#" target="_blank"><i class="fab fa-github"></i></a>
+                                <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-card-inner">
+                        <div class="team-card-front">
+                            <div class="member-image">
+                                <img src="{{ url_for('static', filename='img/WhatsApp Image 2025-03-25 at 19.06.17_048fe7a2.jpg') }}" alt="Team Member">
+                            </div>
+                            <h3>Poralla Jagadeeshwara Reddy</h3>
+                            <p>Computer Science Student</p>
+                        </div>
+                        <div class="team-card-back">
+                            <h3>About Me</h3>
+                            <p>I am Current Pursuing B.tech 3rd year At Kalasalingam Academy Of Research and Education.</p>
+                            <div class="social-links">
+                                <a href="#" target="_blank"><i class="fab fa-linkedin"></i></a>
+                                <a href="#" target="_blank"><i class="fab fa-github"></i></a>
+                                <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-card-inner">
+                        <div class="team-card-front">
+                            <div class="member-image">
+                                <img src="{{ url_for('static', filename='img/WhatsApp Image 2025-03-25 at 19.06.17_ae7fd85b.jpg') }}" alt="Team Member">
+                            </div>
+                            <h3>Simuni Yaswanth Reddy</h3>
+                            <p>Computer Science Student</p>
+                        </div>
+                        <div class="team-card-back">
+                            <h3>About Me</h3>
+                            <p>I am Current Pursuing B.tech 3rd year At Kalasalingam Academy Of Research and Education..</p>
+                            <div class="social-links">
+                                <a href="#" target="_blank"><i class="fab fa-linkedin"></i></a>
+                                <a href="#" target="_blank"><i class="fab fa-github"></i></a>
+                                <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section contact-section">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <p class="section-description">Have questions? We'd love to hear from you.</p>
+            
+            <div class="contact-container">
+                <div class="contact-info">
+                    <div class="contact-card">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>Our Location</h3>
+                        <p>Kalasalingam Academy of Research and Education, Krishnankoil, Tamil Nadu</p>
+                    </div>
+                    <div class="contact-card">
+                        <i class="fas fa-envelope"></i>
+                        <h3>Email Us</h3>
+                        <p>support@aivideosum.com</p>
+                    </div>
+                    <div class="contact-card">
+                        <i class="fas fa-phone"></i>
+                        <h3>Call Us</h3>
+                        <p>+91 123-456-7890</p>
+                    </div>
+                </div>
+                
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" id="name" required>
+                        <label for="name">Your Name</label>
+                        <span class="highlight"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="email" id="email" required>
+                        <label for="email">Your Email</label>
+                        <span class="highlight"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <textarea id="message" required></textarea>
+                        <label for="message">Your Message</label>
+                        <span class="highlight"></span>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <span class="btn-content">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Send Message</span>
+                        </span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Video Summarizer</span>
+                </div>
+                <p class="footer-text"> 2025 AI Video Summarizer. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</div>
+    
+</body>
+</html>
